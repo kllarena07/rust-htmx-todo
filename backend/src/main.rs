@@ -12,7 +12,7 @@ fn main() {
  
     let tcp_addr: String = format!("127.0.0.1:{}", port);
 
-    let listener = TcpListener::bind(tcp_addr).unwrap();
+    let listener = TcpListener::bind(tcp_addr).expect("Error: Failed to bind to address.");
 
     for stream in listener.incoming() {
         let stream = stream.unwrap();
