@@ -9,6 +9,11 @@ fn handle_connection(mut stream: TcpStream) {
     let mut buffer = [0; 1024];
 
     stream.read(&mut buffer).expect("Error: Failed to read from client.");
+
+    let request = String::from_utf8_lossy(&buffer[..]);
+    let method_length = request.find('\n').unwrap();
+
+    println!("{}", &request[..method_length]);
     
     let get = b"GET / HTTP/1.1\r\n";
 
