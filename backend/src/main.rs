@@ -1,6 +1,5 @@
 use std::io::Write;
-use std::net::TcpListener;
-use std::net::TcpStream;
+use std::net::{TcpListener, TcpStream};
 use std::io::prelude::Read;
 use dotenv::dotenv;
 use std::env;
