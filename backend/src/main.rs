@@ -2,7 +2,8 @@ use std::io::Write;
 use std::net::{TcpListener, TcpStream};
 use std::io::prelude::Read;
 use dotenv::dotenv;
-use std::env;
+use std::{env, fs};
+use std::thread;
 
 fn handle_connection(mut stream: TcpStream) {
     let mut buffer = [0; 1024];
@@ -20,11 +21,18 @@ fn main() {
  
     let tcp_addr: String = format!("127.0.0.1:{}", port);
 
-    let listener = TcpListener::bind(tcp_addr).expect("Error: Failed to bind to address.");
+    let listener = TcpListener::bind(&tcp_addr).expect("Error: Failed to bind to address.");
+    println!("Server listening on {}", &tcp_addr);
 
     for stream in listener.incoming() {
-        let stream = stream.unwrap();
+        match stream {
+            Ok(stream) => {
+                thread::spawn(|| handle_connection(stream));
+            }
+            Err(e) => {
+                eprintln!("Failed to establish connection: {}", e);
+            }
+        }
 
-        handle_connection(stream);
     }
 }
