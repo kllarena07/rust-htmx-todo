@@ -10,10 +10,10 @@ fn build_all_todo_html() -> String {
         Ok(data) => {
             let data_array: Vec<String> = data.split('\n').map(|s| s.to_string()).collect();
 
-            let mut list_html = String::from("<ul>\n");
+            let mut list_html: String = String::from("<ul>\n");
 
             for i in 0..data_array.len() {
-                let list_item = format!(
+                let list_item: String = format!(
                     "
                     <li data-todo-id=\"{}\">\n
                         {}\n
@@ -34,8 +34,8 @@ fn build_all_todo_html() -> String {
         }
     };
 
-    let base_html = fs::read_to_string("../frontend/index.html").unwrap();
-    let with_replaced = base_html.replace("|--TODOS PLACEHOLDER--|", &replacement_html);
+    let base_html: String = fs::read_to_string("../frontend/index.html").unwrap();
+    let with_replaced: String = base_html.replace("|--TODOS PLACEHOLDER--|", &replacement_html);
 
     with_replaced
 }
@@ -49,17 +49,25 @@ fn handle_connection(mut stream: TcpStream) {
 
     println!("{}", request);
 
-    let home = b"GET / HTTP/1.1\r\n";
+    let home: &[u8; 16] = b"GET / HTTP/1.1\r\n";
+    let create: &[u8; 23] = b"POST /create HTTP/1.1\r\n";
 
     let (status_line, content) =
         if buffer.starts_with(home) {
             let home_page_html = build_all_todo_html();
 
             ("HTTP/1.1 200 OK", home_page_html)
-        } else {
-            let unknown_html = fs::read_to_string("../frontend/404.html").unwrap();
+        } else if buffer.starts_with(create) {
+            // update the database
+            // return rebuilt html
 
-            ("HTTP/1.1 404 NOT FOUND", unknown_html)
+            let not_found_html: String = fs::read_to_string("../frontend/404.html").unwrap();
+
+            ("HTTP/1.1 200 OK", not_found_html)
+        } else {
+            let not_found_html: String = fs::read_to_string("../frontend/404.html").unwrap();
+
+            ("HTTP/1.1 404 NOT FOUND", not_found_html)
         };
 
     let response = format!(
@@ -82,7 +90,7 @@ fn main() {
     let listener = TcpListener::bind(&tcp_addr).expect("Error: Failed to bind to address.");
     println!("Server listening on {}", &tcp_addr);
 
-    let pool = ThreadPool::new(4);
+    let pool: ThreadPool = ThreadPool::new(4);
 
     for stream in listener.incoming() {
         match stream {
