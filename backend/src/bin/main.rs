@@ -12,13 +12,13 @@ fn build_all_todo_html() -> String {
 
             let mut list_html = String::from("<ul>\n");
 
-            for data in data_array {
+            for i in 0..data_array.len() {
                 let list_item = format!(
                     "
-                    <li>\n
+                    <li data-todo-id=\"{}\">\n
                         {}\n
                     </li>\n
-                    ", data
+                    ", i, data_array[i]
                 );
 
                 list_html += list_item.as_str();
