@@ -41,7 +41,7 @@ fn build_all_todo_html() -> String {
 }
 
 fn handle_connection(mut stream: TcpStream) {
-    let mut buffer = [0; 1024];
+    let mut buffer: [u8; 1024] = [0; 1024];
 
     stream.read(&mut buffer).expect("Error: Failed to read from client.");
 
