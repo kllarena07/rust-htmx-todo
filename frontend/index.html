@@ -6,6 +6,36 @@
   </head>
   <body>
     <h1>My Todos</h1>
-    |--TODOS PLACEHOLDER--|
+    <div>
+      |--TODOS PLACEHOLDER--|
+    </div>
+    <input type="text" />
+    <button>Create New Todo</button>
+    <script>
+      const input = document.querySelector("input");
+      const button = document.querySelector("button");
+      const div = document.querySelector("div");
+
+      const create_new_todo = async () => {
+        const fd = new FormData();
+
+        fd.set("todo", input.value);
+
+        try {
+          const response = await fetch("http://127.0.0.1:3000/create", {
+            method: "POST",
+            body: fd
+          });
+          const text = await response.text();
+          div.innerHTML = text;
+
+          console.log("Replaced HTML");
+        } catch(e) {
+          console.error(e);
+        }
+      }
+
+      button.addEventListener("click", create_new_todo);
+    </script>
   </body>
 </html>

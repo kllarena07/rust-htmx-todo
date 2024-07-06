@@ -2,10 +2,10 @@ use std::io::Write;
 use std::net::{TcpListener, TcpStream};
 use std::io::prelude::Read;
 use dotenv::dotenv;
-use std::{env, fs};
+use std::{env, fs, fs::OpenOptions};
 use backend::ThreadPool;
 
-fn build_all_todo_html() -> String {
+fn build_todo_list_element() -> String {
     let replacement_html: String = match fs::read_to_string("db.txt") {
         Ok(data) => {
             let data_array: Vec<String> = data.split('\n').map(|s| s.to_string()).collect();
@@ -34,6 +34,11 @@ fn build_all_todo_html() -> String {
         }
     };
 
+    replacement_html
+}
+
+fn build_all_todo_html() -> String {
+    let replacement_html = build_todo_list_element();
     let base_html: String = fs::read_to_string("../frontend/index.html").unwrap();
     let with_replaced: String = base_html.replace("|--TODOS PLACEHOLDER--|", &replacement_html);
 
@@ -58,12 +63,46 @@ fn handle_connection(mut stream: TcpStream) {
 
             ("HTTP/1.1 200 OK", home_page_html)
         } else if buffer.starts_with(create) {
-            // update the database
-            // return rebuilt html
+            let index = match request.find("Content-Disposition: form-data; name=\"todo\"") {
+                Some(number) => {
+                    number
+                },
+                None => {
+                    eprintln!("Could not locate Content-Disposition");
+                    0
+                }
+            };
 
-            let not_found_html: String = fs::read_to_string("../frontend/404.html").unwrap();
+            let body_start: &str = &request[index..];
+            let body_end = match body_start.find("---") {
+                Some(number) => {
+                    number
+                },
+                None => {
+                    eprintln!("Could not locate the end.");
+                    0
+                }
+            };
 
-            ("HTTP/1.1 200 OK", not_found_html)
+            let body_data: &str = &request[index..(index + body_end)];
+            let mut first_field: Vec<String> = body_data.split("\r\n").map(|s| s.to_string()).collect();
+            first_field.retain(|s| !s.trim().is_empty());
+
+            let field_data: &String = &first_field[1];
+
+            let mut db_file = OpenOptions::new()
+                        .append(true)
+                        .create(true)
+                        .open("db.txt")
+                        .expect("Failed to open or create file.");
+
+            let new_entry = format!("\n{}", field_data);
+
+            db_file.write_all(new_entry.as_bytes()).expect("Error updating db.");
+
+            let rebuilt_element = build_todo_list_element();
+
+            ("HTTP/1.1 200 OK", rebuilt_element)
         } else {
             let not_found_html: String = fs::read_to_string("../frontend/404.html").unwrap();
 
