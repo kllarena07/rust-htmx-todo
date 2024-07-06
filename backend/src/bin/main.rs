@@ -1,9 +1,8 @@
 use std::io::Write;
 use std::net::{TcpListener, TcpStream};
 use std::io::prelude::Read;
-use std::time::Duration;
 use dotenv::dotenv;
-use std::{env, fs, thread};
+use std::{env, fs};
 use backend::ThreadPool;
 
 fn handle_connection(mut stream: TcpStream) {
@@ -15,30 +14,63 @@ fn handle_connection(mut stream: TcpStream) {
 
     println!("{}", request);
 
-    let get = b"GET / HTTP/1.1\r\n";
-    let sleep = b"GET /sleep HTTP/1.1\r\n";
+    let read_data: Vec<String> = match fs::read_to_string("db.txt") {
+        Ok(data) => {
+            let data_array = data.split('\n').map(|s| s.to_string()).collect();
+            data_array
+        },
+        Err(e) => {
+            eprintln!("{}", e);
+            return;
+        }
+    };
 
-    let (status_line, filename) =
-            if buffer.starts_with(get) {
-                ("HTTP/1.1 200 OK", "../frontend/index.html")
-            } else if buffer.starts_with(sleep) {
-                thread::sleep(Duration::from_secs(5));
-                ("HTTP/1.1 200 OK", "../frontend/index.html")
-            } else {
-                ("HTTP/1.1 404 NOT FOUND", "../frontend/404.html")
-            };
+    let home = b"GET / HTTP/1.1\r\n";
+
+    if buffer.starts_with(home) {
+        let mut html = String::from(
+            "
+            <!DOCTYPE html>\n
+            <html lang=\"en\">\n
+            <head>\n
+                <meta charset=\"utf-8\">\n
+                <title>HTMX/Rust Todo</title>\n
+            </head>\n
+            <body>\n
+                <h1>Todos:</h1>\n
+                <ul>
+            "
+        );
+
+        for data in read_data {
+            let todo = format!(
+                "
+                <li>\n
+                    {}\n
+                </li>\n
+                ", data
+            );
+
+            html += &todo;
+        }
+
+        html +=
+        "
+            </ul>\n
+            </body>\n
+            </html>
+        ";
+
+        let response = format!(
+            "{}\r\nContent-Length: {}\r\n\r\n{}",
+            "HTTP/1.1 200 OK",
+            html.len(),
+            html
+        );
     
-    let contents = fs::read_to_string(filename).unwrap();
-
-    let response = format!(
-        "{}\r\nContent-Length: {}\r\n\r\n{}",
-        status_line,
-        contents.len(),
-        contents
-    );
-
-    stream.write(response.as_bytes()).unwrap();
-    stream.flush().unwrap();
+        stream.write(response.as_bytes()).unwrap();
+        stream.flush().unwrap();
+    }
 }
 fn main() {
     dotenv().ok();
