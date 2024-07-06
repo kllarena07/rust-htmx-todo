@@ -51,30 +51,26 @@ fn handle_connection(mut stream: TcpStream) {
 
     let home = b"GET / HTTP/1.1\r\n";
 
-    if buffer.starts_with(home) {
-        let home_page_html = build_all_todo_html();
+    let (status_line, content) =
+        if buffer.starts_with(home) {
+            let home_page_html = build_all_todo_html();
 
-        let response = format!(
-            "{}\r\nContent-Length: {}\r\n\r\n{}",
-            "HTTP/1.1 200 OK",
-            home_page_html.len(),
-            home_page_html
-        );
-    
-        stream.write(response.as_bytes()).unwrap();
-        stream.flush().unwrap();
-    } else {
-        let contents = fs::read_to_string("../frontend/404.html").unwrap();
-        let response = format!(
-            "{}\r\nContent-Length: {}\r\n\r\n{}",
-            "HTTP/1.1 404 NOT FOUND",
-            contents.len(),
-            contents
-        );
-    
-        stream.write(response.as_bytes()).unwrap();
-        stream.flush().unwrap();
-    }
+            ("HTTP/1.1 200 OK", home_page_html)
+        } else {
+            let unknown_html = fs::read_to_string("../frontend/404.html").unwrap();
+
+            ("HTTP/1.1 404 NOT FOUND", unknown_html)
+        };
+
+    let response = format!(
+        "{}\r\nContent-Length: {}\r\n\r\n{}",
+        status_line,
+        content.len(),
+        content
+    );
+
+    stream.write(response.as_bytes()).unwrap();
+    stream.flush().unwrap();
 }
 fn main() {
     dotenv().ok();
