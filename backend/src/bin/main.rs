@@ -5,6 +5,41 @@ use dotenv::dotenv;
 use std::{env, fs};
 use backend::ThreadPool;
 
+fn build_all_todo_html() -> String {
+    let replacement_html: String = match fs::read_to_string("db.txt") {
+        Ok(data) => {
+            let data_array: Vec<String> = data.split('\n').map(|s| s.to_string()).collect();
+
+            let mut list_html = String::from("<ul>\n");
+
+            for data in data_array {
+                let list_item = format!(
+                    "
+                    <li>\n
+                        {}\n
+                    </li>\n
+                    ", data
+                );
+
+                list_html += list_item.as_str();
+            }
+
+            list_html += "</ul>\n";
+
+            list_html
+        },
+        Err(e) => {
+            eprintln!("{}", e);
+            String::from("<p>Error fetching todos</p>")
+        }
+    };
+
+    let base_html = fs::read_to_string("../frontend/index.html").unwrap();
+    let with_replaced = base_html.replace("|--TODOS PLACEHOLDER--|", &replacement_html);
+
+    with_replaced
+}
+
 fn handle_connection(mut stream: TcpStream) {
     let mut buffer = [0; 1024];
 
@@ -14,58 +49,16 @@ fn handle_connection(mut stream: TcpStream) {
 
     println!("{}", request);
 
-    let read_data: Vec<String> = match fs::read_to_string("db.txt") {
-        Ok(data) => {
-            let data_array = data.split('\n').map(|s| s.to_string()).collect();
-            data_array
-        },
-        Err(e) => {
-            eprintln!("{}", e);
-            return;
-        }
-    };
-
     let home = b"GET / HTTP/1.1\r\n";
 
     if buffer.starts_with(home) {
-        let mut html = String::from(
-            "
-            <!DOCTYPE html>\n
-            <html lang=\"en\">\n
-            <head>\n
-                <meta charset=\"utf-8\">\n
-                <title>HTMX/Rust Todo</title>\n
-            </head>\n
-            <body>\n
-                <h1>Todos:</h1>\n
-                <ul>
-            "
-        );
-
-        for data in read_data {
-            let todo = format!(
-                "
-                <li>\n
-                    {}\n
-                </li>\n
-                ", data
-            );
-
-            html += &todo;
-        }
-
-        html +=
-        "
-            </ul>\n
-            </body>\n
-            </html>
-        ";
+        let home_page_html = build_all_todo_html();
 
         let response = format!(
             "{}\r\nContent-Length: {}\r\n\r\n{}",
             "HTTP/1.1 200 OK",
-            html.len(),
-            html
+            home_page_html.len(),
+            home_page_html
         );
     
         stream.write(response.as_bytes()).unwrap();
