@@ -10,15 +10,11 @@ fn build_todo_list_element() -> String {
         Ok(data) => {
             let data_array: Vec<String> = data.split('\n').map(|s| s.to_string()).collect();
 
-            let mut list_html: String = String::from("<ul>\n");
+            let mut list_html: String = String::from("<ul>");
 
             for i in 0..data_array.len() {
                 let list_item: String = format!(
-                    "
-                    <li data-todo-id=\"{}\">\n
-                        {}\n
-                    </li>\n
-                    ", i, data_array[i]
+                    "<li data-todo-id=\"{}\">{}</li>", i, data_array[i]
                 );
 
                 list_html += list_item.as_str();
