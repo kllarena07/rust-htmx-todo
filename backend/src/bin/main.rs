@@ -50,8 +50,9 @@ fn handle_connection(mut stream: TcpStream) {
 
     println!("{}", request);
 
-    let home: &[u8; 16] = b"GET / HTTP/1.1\r\n";
-    let create: &[u8; 23] = b"POST /create HTTP/1.1\r\n";
+    let home = b"GET / HTTP/1.1\r\n";
+    let create = b"POST /create HTTP/1.1\r\n";
+    let delete = b"DELETE /delete HTTP/1.1\r\n";
 
     let (status_line, content) =
         if buffer.starts_with(home) {
