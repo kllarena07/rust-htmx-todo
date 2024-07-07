@@ -17,7 +17,7 @@
       const div = document.querySelector("div");
 
       const create_new_todo = async () => {
-        console.log("Attempting to create new todo:", input.value)
+        console.log("Attempting to create new todo:", input.value);
         if (input.value === '') {
           alert("Please enter a todo.");
           return;
@@ -46,6 +46,9 @@
       }
 
       button.addEventListener("click", create_new_todo);
+      input.addEventListener("keydown", evt => {
+        if (evt.code === "Enter") create_new_todo();
+      });
     </script>
   </body>
 </html>
