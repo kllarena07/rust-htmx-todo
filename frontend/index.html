@@ -10,13 +10,19 @@
       |--TODOS PLACEHOLDER--|
     </div>
     <input type="text" />
-    <button>Create New Todo</button>
+    <button type="submit">Create New Todo</button>
     <script>
       const input = document.querySelector("input");
       const button = document.querySelector("button");
       const div = document.querySelector("div");
 
       const create_new_todo = async () => {
+        console.log("Attempting to create new todo:", input.value)
+        if (input.value === '') {
+          alert("Please enter a todo.");
+          return;
+        }
+
         const fd = new FormData();
 
         fd.set("todo", input.value);
@@ -33,6 +39,8 @@
         } catch(e) {
           console.error(e);
         }
+
+        console.log("Created new todo:", input.value)
       }
 
       button.addEventListener("click", create_new_todo);
