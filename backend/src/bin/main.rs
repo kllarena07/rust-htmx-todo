@@ -4,6 +4,7 @@ use std::io::prelude::Read;
 use dotenv::dotenv;
 use std::{env, fs, fs::OpenOptions};
 use backend::ThreadPool;
+use std::borrow::Cow;
 
 fn build_todo_list_element() -> String {
     let replacement_html: String = match fs::read_to_string("db.txt") {
@@ -41,6 +42,38 @@ fn build_all_todo_html() -> String {
     with_replaced
 }
 
+fn extract_field_data(request: &Cow<str>, field_name: &str) -> String {
+    let field = format!("Content-Disposition: form-data; name=\"{}\"", field_name);
+
+    let index = match request.find(&field) {
+        Some(number) => {
+            number
+        },
+        None => {
+            eprintln!("Could not locate Content-Disposition");
+            0
+        }
+    };
+
+    let body_start: &str = &request[index..];
+    let body_end = match body_start.find("---") {
+        Some(number) => {
+            number
+        },
+        None => {
+            eprintln!("Could not locate the end.");
+            0
+        }
+    };
+
+    let body_data: &str = &request[index..(index + body_end)];
+    let mut first_field: Vec<String> = body_data.split("\r\n").map(|s| s.to_string()).collect();
+    first_field.retain(|s| !s.trim().is_empty());
+
+    let field_data: String = first_field[1].clone();
+    field_data
+}
+
 fn handle_connection(mut stream: TcpStream) {
     let mut buffer: [u8; 1024] = [0; 1024];
 
@@ -60,32 +93,7 @@ fn handle_connection(mut stream: TcpStream) {
 
             ("HTTP/1.1 200 OK", home_page_html)
         } else if buffer.starts_with(create) {
-            let index = match request.find("Content-Disposition: form-data; name=\"todo\"") {
-                Some(number) => {
-                    number
-                },
-                None => {
-                    eprintln!("Could not locate Content-Disposition");
-                    0
-                }
-            };
-
-            let body_start: &str = &request[index..];
-            let body_end = match body_start.find("---") {
-                Some(number) => {
-                    number
-                },
-                None => {
-                    eprintln!("Could not locate the end.");
-                    0
-                }
-            };
-
-            let body_data: &str = &request[index..(index + body_end)];
-            let mut first_field: Vec<String> = body_data.split("\r\n").map(|s| s.to_string()).collect();
-            first_field.retain(|s| !s.trim().is_empty());
-
-            let field_data: &String = &first_field[1];
+            let field_data = extract_field_data(&request, "todo");
 
             let mut db_file = OpenOptions::new()
                         .append(true)
