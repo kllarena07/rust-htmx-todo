@@ -10,10 +10,10 @@
       |--TODOS PLACEHOLDER--|
     </div>
     <input type="text" />
-    <button type="submit">Create New Todo</button>
+    <button type="submit" id="create-btn">Create New Todo</button>
     <script>
       const input = document.querySelector("input");
-      const button = document.querySelector("button");
+      const create_btn = document.getElementById("create-btn");
       const div = document.querySelector("div");
 
       const create_new_todo = async () => {
@@ -45,10 +45,47 @@
         console.log("Created new todo:", input.value)
       }
 
-      button.addEventListener("click", create_new_todo);
+      create_btn.addEventListener("click", create_new_todo);
       input.addEventListener("keydown", evt => {
         if (evt.code === "Enter") create_new_todo();
       });
+
+      const del_btns = document.querySelectorAll('.del-btn');
+
+      const delete_todo = async (id) => {
+        const fd = new FormData();
+
+        fd.set("todo-id", id);
+
+        try {
+          const response = await fetch("http://127.0.0.1:3000/delete", {
+            method: "DELETE",
+            body: fd
+          });
+          const text = await response.text();
+          div.innerHTML = text;
+
+          console.log("Replaced HTML");
+        } catch(e) {
+          console.error(e);
+        }
+
+        const new_btns = document.querySelectorAll('.del-btn');
+
+        for (let del_btn of new_btns) {
+          const id = Number(del_btn.getAttribute('data-todo-id'));
+          del_btn.addEventListener("click", () => {
+            delete_todo(id);
+          });
+        }
+      }
+
+      for (let del_btn of del_btns) {
+        const id = Number(del_btn.getAttribute('data-todo-id'));
+        del_btn.addEventListener("click", () => {
+          delete_todo(id);
+        });
+      }
     </script>
   </body>
 </html>
