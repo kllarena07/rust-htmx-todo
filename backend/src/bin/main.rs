@@ -14,6 +14,10 @@ fn build_todo_list_element() -> String {
             let mut list_html: String = String::from("<ul>");
 
             for i in 0..data_array.len() {
+                if data_array[i] == "" {
+                    continue;
+                }
+
                 let list_item: String = format!(
                     "<li>
                     <button data-todo-id=\"{}\" class=\"del-btn\">
