@@ -108,6 +108,37 @@ fn handle_connection(mut stream: TcpStream) {
             let rebuilt_element = build_todo_list_element();
 
             ("HTTP/1.1 200 OK", rebuilt_element)
+        } else if buffer.starts_with(delete) {
+            let not_found_html: String = fs::read_to_string("../frontend/404.html").unwrap();
+
+            let id_field_data: String = extract_field_data(&request, "todo-id");
+            let todo_id = id_field_data.parse::<usize>().unwrap();
+
+            let db_file_data: String = fs::read_to_string("db.txt").unwrap();
+            let mut todos: Vec<String> = db_file_data.split('\n').map(|s| s.to_string()).collect();
+
+            todos.remove(todo_id);
+
+            let mut db_file = OpenOptions::new()
+            .write(true)
+            .truncate(true)
+            .create(true)
+            .open("db.txt")
+            .expect("Failed to open or create file.");
+
+            let mut new_data = String::new();
+
+            for i in 0..todos.len() {
+                new_data += todos[i].as_str();
+
+                if i != todos.len() - 1 {
+                    new_data += "\n";
+                }
+            }
+            
+            db_file.write_all(new_data.as_bytes()).unwrap();
+
+            ("HTTP/1.1 200 OK", not_found_html)
         } else {
             let not_found_html: String = fs::read_to_string("../frontend/404.html").unwrap();
 
