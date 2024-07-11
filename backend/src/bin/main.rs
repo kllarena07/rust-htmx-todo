@@ -138,7 +138,9 @@ fn handle_connection(mut stream: TcpStream) {
             
             db_file.write_all(new_data.as_bytes()).unwrap();
 
-            ("HTTP/1.1 200 OK", not_found_html)
+            let rebuilt_element = build_todo_list_element();
+
+            ("HTTP/1.1 200 OK", rebuilt_element)
         } else {
             let not_found_html: String = fs::read_to_string("../frontend/404.html").unwrap();
 
