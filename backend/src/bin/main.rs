@@ -15,7 +15,11 @@ fn build_todo_list_element() -> String {
 
             for i in 0..data_array.len() {
                 let list_item: String = format!(
-                    "<li data-todo-id=\"{}\">{}</li>", i, data_array[i]
+                    "<li>
+                    <button data-todo-id=\"{}\" class=\"del-btn\">
+                    {}
+                    </button>
+                    </li>", i, data_array[i]
                 );
 
                 list_html += list_item.as_str();
@@ -109,8 +113,6 @@ fn handle_connection(mut stream: TcpStream) {
 
             ("HTTP/1.1 200 OK", rebuilt_element)
         } else if buffer.starts_with(delete) {
-            let not_found_html: String = fs::read_to_string("../frontend/404.html").unwrap();
-
             let id_field_data: String = extract_field_data(&request, "todo-id");
             let todo_id = id_field_data.parse::<usize>().unwrap();
 
