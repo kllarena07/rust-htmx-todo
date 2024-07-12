@@ -45,7 +45,7 @@ fn build_todo_list_element() -> String {
 fn build_all_todo_html() -> String {
     let replacement_html = build_todo_list_element();
     let base_html: String = fs::read_to_string("../frontend/index.html").unwrap();
-    let with_replaced: String = base_html.replace("|--TODOS PLACEHOLDER--|", &replacement_html);
+    let with_replaced: String = base_html.replace("|--LIST PLACEHOLDER--|", &replacement_html);
 
     with_replaced
 }
