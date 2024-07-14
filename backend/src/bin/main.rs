@@ -17,7 +17,7 @@ fn get_db_data() -> Result<Vec<String>> {
     Ok(data)
 }
 
-fn build_todo_list_element() -> String {
+fn build_list_elem() -> String {
     let db_data = get_db_data().unwrap();
 
     let mut items_html: String = String::from("");
@@ -40,7 +40,7 @@ fn build_todo_list_element() -> String {
 }
 
 fn build_all_todo_html() -> String {
-    let replacement_html = build_todo_list_element();
+    let replacement_html = build_list_elem();
     let base_html: String = fs::read_to_string("../frontend/index.html").unwrap();
     let with_replaced: String = base_html.replace("|--LIST PLACEHOLDER--|", &replacement_html);
 
@@ -110,7 +110,7 @@ fn handle_connection(mut stream: TcpStream) {
 
             db_file.write_all(new_entry.as_bytes()).expect("Error updating db.");
 
-            let rebuilt_element = build_todo_list_element();
+            let rebuilt_element = build_list_elem();
 
             ("HTTP/1.1 200 OK", rebuilt_element)
         } else if buffer.starts_with(delete) {
@@ -141,7 +141,7 @@ fn handle_connection(mut stream: TcpStream) {
             
             db_file.write_all(new_data.as_bytes()).unwrap();
 
-            let rebuilt_element = build_todo_list_element();
+            let rebuilt_element = build_list_elem();
 
             ("HTTP/1.1 200 OK", rebuilt_element)
         } else {
