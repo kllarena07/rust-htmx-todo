@@ -40,9 +40,9 @@ fn build_list_elem() -> String {
 }
 
 fn build_page_html() -> String {
-    let replacement_html = build_list_elem();
+    let list_html = build_list_elem();
     let base_html: String = fs::read_to_string("../frontend/index.html").unwrap();
-    let with_replaced: String = base_html.replace("|--LIST PLACEHOLDER--|", &replacement_html);
+    let with_replaced: String = base_html.replace("|--LIST PLACEHOLDER--|", &list_html);
 
     with_replaced
 }
