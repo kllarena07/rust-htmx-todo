@@ -1,4 +1,4 @@
-use std::io::{BufRead, BufReader, Result};
+use std::io::{BufRead, BufReader, Result, Write};
 use std::net::{TcpListener, TcpStream};
 use std::io::prelude::Read;
 use dotenv::dotenv;
