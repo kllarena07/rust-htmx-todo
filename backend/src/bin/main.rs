@@ -39,7 +39,7 @@ fn build_list_elem() -> String {
     replacement_html
 }
 
-fn build_all_todo_html() -> String {
+fn build_page_html() -> String {
     let replacement_html = build_list_elem();
     let base_html: String = fs::read_to_string("../frontend/index.html").unwrap();
     let with_replaced: String = base_html.replace("|--LIST PLACEHOLDER--|", &replacement_html);
@@ -94,7 +94,7 @@ fn handle_connection(mut stream: TcpStream) {
 
     let (status_line, content) =
         if buffer.starts_with(home) {
-            let home_page_html = build_all_todo_html();
+            let home_page_html = build_page_html();
 
             ("HTTP/1.1 200 OK", home_page_html)
         } else if buffer.starts_with(create) {
