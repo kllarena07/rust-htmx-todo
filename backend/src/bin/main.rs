@@ -1,43 +1,40 @@
-use std::io::Write;
+use std::io::{BufRead, BufReader, Result};
 use std::net::{TcpListener, TcpStream};
 use std::io::prelude::Read;
 use dotenv::dotenv;
-use std::{env, fs, fs::OpenOptions};
+use std::{env, fs, fs::OpenOptions, fs::File};
 use backend::ThreadPool;
 use std::borrow::Cow;
 
+fn get_db_data() -> Result<Vec<String>> {
+    let file = File::open("db.txt")?;
+    let reader = BufReader::new(file);
+    let data: Vec<String> = reader.lines()
+        .filter_map(|line| line.ok())
+        .filter(|line| !line.is_empty())
+        .collect();
+
+    Ok(data)
+}
+
 fn build_todo_list_element() -> String {
-    let replacement_html: String = match fs::read_to_string("db.txt") {
-        Ok(data) => {
-            let data_array: Vec<String> = data.split('\n').map(|s| s.to_string()).collect();
+    let db_data = get_db_data().unwrap();
 
-            let mut list_html: String = String::from("<ul>");
+    let mut items_html: String = String::from("");
 
-            for i in 0..data_array.len() {
-                if data_array[i] == "" {
-                    continue;
-                }
+    for i in 0..db_data.len() {
+        let list_item: String = format!(
+            "<li>
+            <button data-todo-id=\"{}\" class=\"del-btn\">
+            {}
+            </button>
+            </li>", i, db_data[i]
+        );
 
-                let list_item: String = format!(
-                    "<li>
-                    <button data-todo-id=\"{}\" class=\"del-btn\">
-                    {}
-                    </button>
-                    </li>", i, data_array[i]
-                );
+        items_html += &list_item;
+    }
 
-                list_html += list_item.as_str();
-            }
-
-            list_html += "</ul>\n";
-
-            list_html
-        },
-        Err(e) => {
-            eprintln!("{}", e);
-            String::from("<p>Error fetching todos</p>")
-        }
-    };
+    let replacement_html: String = format!("<ul>{}</ul>", items_html);
 
     replacement_html
 }
