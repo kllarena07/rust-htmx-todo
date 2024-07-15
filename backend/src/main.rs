@@ -85,7 +85,7 @@ fn add_task(task: &str) {
                         .expect("Failed to open file.");
 
     // Task should already be formatted with a '\n' in front
-    db_file.write_all(task.as_bytes()).expect("Error updating db.");
+    db_file.write_all(task.as_bytes()).expect("Error adding task to db.");
 }
 
 fn remove_task(task_id: usize) {
@@ -105,7 +105,7 @@ fn remove_task(task_id: usize) {
         new_data += db_data[i].as_str();
     }
     
-    db_file.write_all(new_data.as_bytes()).expect("Error updating db.");
+    db_file.write_all(new_data.as_bytes()).expect("Error removing task from db.");
 }
 
 fn handle_connection(mut stream: TcpStream) {
