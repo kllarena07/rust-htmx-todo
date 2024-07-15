@@ -28,15 +28,17 @@
       }
       
       const create_new_todo = async () => {
-        console.log("Attempting to create new todo:", input.value);
-        if (input.value === '') {
+        const new_task = input.value;
+
+        console.log("Attempting to create new todo:", new_task);
+        if (new_task === '') {
           alert("Please enter a todo.");
           return;
         }
 
         const fd = new FormData();
 
-        fd.set("todo", input.value);
+        fd.set("task", new_task);
 
         try {
           const response = await fetch("http://127.0.0.1:3000/create", {
@@ -66,7 +68,7 @@
       const delete_todo = async (id) => {
         const fd = new FormData();
 
-        fd.set("todo-id", id);
+        fd.set("task-id", id);
 
         try {
           const response = await fetch("http://127.0.0.1:3000/delete", {
