@@ -130,7 +130,9 @@ fn handle_connection(mut stream: TcpStream) {
         b if b.starts_with(create) => {
             let task_data = extract_field_data(&request, "task");
 
-            add_task(&task_data);
+            let formatted_task = format!("\n{}", task_data);
+
+            add_task(&formatted_task);
 
             let rebuilt_element = build_list_elem();
 
