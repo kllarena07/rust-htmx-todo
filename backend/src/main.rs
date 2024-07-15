@@ -121,12 +121,13 @@ fn handle_connection(mut stream: TcpStream) {
     let create = b"POST /create HTTP/1.1\r\n";
     let delete = b"DELETE /delete HTTP/1.1\r\n";
 
-    let (status_line, content) =
-        if buffer.starts_with(home) {
+    let (status_line, content) = match buffer {
+        b if b.starts_with(home) => {
             let home_page_html = build_page_html();
 
             ("HTTP/1.1 200 OK", home_page_html)
-        } else if buffer.starts_with(create) {
+        },
+        b if b.starts_with(create) => {
             let task_data = extract_field_data(&request, "task");
 
             add_task(&task_data);
@@ -134,7 +135,8 @@ fn handle_connection(mut stream: TcpStream) {
             let rebuilt_element = build_list_elem();
 
             ("HTTP/1.1 200 OK", rebuilt_element)
-        } else if buffer.starts_with(delete) {
+        },
+        b if b.starts_with(delete) => {
             let id_field_data: String = extract_field_data(&request, "todo-id");
             let task_id = id_field_data.parse::<usize>().unwrap();
 
@@ -143,14 +145,16 @@ fn handle_connection(mut stream: TcpStream) {
             let rebuilt_element = build_list_elem();
 
             ("HTTP/1.1 200 OK", rebuilt_element)
-        } else {
+        }
+        _ => {
             let not_found_html: String = fs::read_to_string("../frontend/404.html").unwrap_or_else(|err| {
                 eprintln!("Error finding 404 HTML, using default value. Error: {}", err);
                 "404 Page Not Found".to_string()
             });
 
             ("HTTP/1.1 404 NOT FOUND", not_found_html)
-        };
+        }
+    };
 
     let response = format!(
         "{}\r\nContent-Length: {}\r\n\r\n{}",
