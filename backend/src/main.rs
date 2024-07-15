@@ -24,7 +24,7 @@ fn build_list_elem() -> String {
     for i in 0..db_data.len() {
         let list_item: String = format!(
             "<li>
-            <button data-todo-id=\"{}\" class=\"del-btn\">
+            <button data-task-id=\"{}\" class=\"del-btn\">
             {}
             </button>
             </li>", i, db_data[i]
@@ -137,7 +137,7 @@ fn handle_connection(mut stream: TcpStream) {
             ("HTTP/1.1 200 OK", rebuilt_element)
         },
         b if b.starts_with(delete) => {
-            let id_field_data: String = extract_field_data(&request, "todo-id");
+            let id_field_data: String = extract_field_data(&request, "task-id");
             let task_id = id_field_data.parse::<usize>().unwrap();
 
             remove_task(task_id);
