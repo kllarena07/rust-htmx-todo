@@ -78,6 +78,16 @@ fn extract_field_data(request: &Cow<str>, field_name: &str) -> String {
     field_data
 }
 
+fn add_task(task: &str) {
+    let mut db_file = OpenOptions::new()
+                        .append(true)
+                        .open("db.txt")
+                        .expect("Failed to open file.");
+
+    // Task should already be formatted with a '\n' in front
+    db_file.write_all(task.as_bytes()).expect("Error updating db.");
+}
+
 fn handle_connection(mut stream: TcpStream) {
     let mut buffer: [u8; 1024] = [0; 1024];
 
@@ -97,17 +107,9 @@ fn handle_connection(mut stream: TcpStream) {
 
             ("HTTP/1.1 200 OK", home_page_html)
         } else if buffer.starts_with(create) {
-            let field_data = extract_field_data(&request, "todo");
+            let task_data = extract_field_data(&request, "task");
 
-            let mut db_file = OpenOptions::new()
-                        .append(true)
-                        .create(true)
-                        .open("db.txt")
-                        .expect("Failed to open or create file.");
-
-            let new_entry = format!("\n{}", field_data);
-
-            db_file.write_all(new_entry.as_bytes()).expect("Error updating db.");
+            add_task(&task_data);
 
             let rebuilt_element = build_list_elem();
 
