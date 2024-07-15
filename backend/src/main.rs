@@ -3,7 +3,6 @@ use std::net::{TcpListener, TcpStream};
 use std::io::prelude::Read;
 use dotenv::dotenv;
 use std::{env, fs, fs::OpenOptions, fs::File};
-use backend::ThreadPool;
 use std::borrow::Cow;
 
 fn get_db_data() -> Result<Vec<String>> {
@@ -170,14 +169,10 @@ fn main() {
     let listener = TcpListener::bind(&tcp_addr).expect("Error: Failed to bind to address.");
     println!("Server listening on {}", &tcp_addr);
 
-    let pool: ThreadPool = ThreadPool::new(4);
-
     for stream in listener.incoming() {
         match stream {
             Ok(stream) => {
-                pool.execute(|| {
-                    handle_connection(stream);
-                });
+                handle_connection(stream);
             }
             Err(e) => {
                 eprintln!("Failed to establish connection: {}", e);
