@@ -144,7 +144,10 @@ fn handle_connection(mut stream: TcpStream) {
 
             ("HTTP/1.1 200 OK", rebuilt_element)
         } else {
-            let not_found_html: String = fs::read_to_string("../frontend/404.html").unwrap();
+            let not_found_html: String = fs::read_to_string("../frontend/404.html").unwrap_or_else(|err| {
+                eprintln!("Error finding 404 HTML, using default value. Error: {}", err);
+                "404 Page Not Found".to_string()
+            });
 
             ("HTTP/1.1 404 NOT FOUND", not_found_html)
         };
