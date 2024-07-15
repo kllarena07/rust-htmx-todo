@@ -102,6 +102,7 @@ fn remove_task(task_id: usize) {
     let mut new_data = String::new();
 
     for i in 0..db_data.len() {
+        new_data += "\n";
         new_data += db_data[i].as_str();
     }
     
