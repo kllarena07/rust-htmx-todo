@@ -169,6 +169,7 @@ fn main() {
     let listener = TcpListener::bind(&tcp_addr).expect("Error: Failed to bind to address.");
     println!("Server listening on {}", &tcp_addr);
 
+    // single-threaded HTTP server since the current workload doesn't require multithreading
     for stream in listener.incoming() {
         match stream {
             Ok(stream) => {
