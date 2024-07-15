@@ -16,21 +16,23 @@ fn get_db_data() -> Result<Vec<String>> {
     Ok(data)
 }
 
+fn li_elem(task_id: usize, data: &str) -> String {
+    let formatted_task_id = format!("\"{}\"", task_id);
+
+    let base_element = fs::read_to_string("../frontend/components/li-elem.html").unwrap();
+    let with_task_id = base_element.replace("{task_id}", &formatted_task_id);
+    let with_data = with_task_id.replace("{data}", data);
+
+    with_data
+}
+
 fn build_list_elem() -> String {
     let db_data = get_db_data().unwrap();
 
     let mut items_html: String = String::from("");
 
     for i in 0..db_data.len() {
-        let list_item: String = format!(
-            "<li>
-            <button data-task-id=\"{}\" class=\"del-btn\">
-            {}
-            </button>
-            </li>", i, db_data[i]
-        );
-
-        items_html += &list_item;
+        items_html += &li_elem(i, &db_data[i]);
     }
 
     let replacement_html: String = format!("<ul>{}</ul>", items_html);
