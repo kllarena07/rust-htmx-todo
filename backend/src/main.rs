@@ -1,8 +1,7 @@
 use std::io::{BufRead, BufReader, Result, Write};
 use std::net::{TcpListener, TcpStream};
 use std::io::prelude::Read;
-use dotenv::dotenv;
-use std::{env, fs, fs::OpenOptions, fs::File};
+use std::{fs, fs::OpenOptions, fs::File};
 use std::borrow::Cow;
 
 fn get_db_data() -> Result<Vec<String>> {
@@ -172,14 +171,10 @@ fn handle_connection(mut stream: TcpStream) {
     stream.flush().unwrap();
 }
 fn main() {
-    dotenv().ok();
+    let tcp_addr: &str = "127.0.0.1:3000";
 
-    let port: String = env::var("PORT").unwrap_or_else(|_| "3000".to_string());
- 
-    let tcp_addr: String = format!("127.0.0.1:{}", port);
-
-    let listener = TcpListener::bind(&tcp_addr).expect("Error: Failed to bind to address.");
-    println!("Server listening on {}", &tcp_addr);
+    let listener = TcpListener::bind(tcp_addr).expect("Error: Failed to bind to address.");
+    println!("Server listening on {}", tcp_addr);
 
     // single-threaded HTTP server since the current workload + desired scale doesn't require multithreading
     for stream in listener.incoming() {
