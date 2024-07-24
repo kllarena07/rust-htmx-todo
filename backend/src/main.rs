@@ -1,7 +1,8 @@
-use std::io::{Write, Error};
+use std::io::{Write, Error, ErrorKind};
 use std::net::{TcpListener, TcpStream};
 use std::io::prelude::Read;
 use std::fs;
+use std::borrow::Cow;
 
 fn li_elem(task_id: usize, data: &str) -> Result<String, Error> {
     let formatted_task_id = format!("\"{}\"", task_id);
@@ -34,6 +35,33 @@ fn handle_home(tasks: &mut Vec<String>) -> Result<String, Error> {
     Ok(with_replaced)
 }
 
+fn extract_field_data(request: &Cow<str>, field_name: &str) -> Result<String, Error> {
+    let field = format!("Content-Disposition: form-data; name=\"{}\"", field_name);
+
+    let index = request.find(&field).ok_or_else(|| Error::new(ErrorKind::NotFound, "Could not locate the desired field."))?;
+
+    let body_start = &request[index..];
+
+    let body_end = body_start.find("---").ok_or_else(|| Error::new(ErrorKind::InvalidData, "Error in capturing field data."))?;
+
+    let body_data: &str = &request[index..(index + body_end)];
+    let mut first_field: Vec<String> = body_data.split("\r\n").map(|s| s.to_string()).collect();
+    first_field.retain(|s| !s.trim().is_empty());
+
+    let field_data: String = first_field[1].clone();
+    Ok(field_data)
+}
+
+fn handle_create(tasks: &mut Vec<String>, request: &Cow<str>) -> Result<String, Error> {
+    let new_task = extract_field_data(&request, "task")?;
+
+    tasks.push(new_task);
+
+    let list_html = build_list(tasks)?;
+
+    Ok(list_html)
+}
+
 fn handle_connection(mut stream: TcpStream, tasks: &mut Vec<String>) {
     let mut buffer: [u8; 1024] = [0; 1024];
 
@@ -58,12 +86,14 @@ fn handle_connection(mut stream: TcpStream, tasks: &mut Vec<String>) {
                 }
             }
         } else if buffer.starts_with(create) {
-            let not_found_html: String = fs::read_to_string("../frontend/404.html").unwrap_or_else(|err| {
-                eprintln!("Error finding 404 HTML, using default value. Error: {}", err);
-                "404 Page Not Found".to_string()
-            });
-
-            ("HTTP/1.1 404 NOT FOUND", not_found_html)
+            match handle_create(tasks, &request) {
+                Ok(list_html) => {
+                    ("HTTP/1.1 200 OK", list_html)
+                },
+                Err(_) => {
+                    ("HTTP/1.1 500 INTERNAL SERVER ERROR", String::from("Error creating task."))
+                }
+            }
         } else if buffer.starts_with(delete) {
             let not_found_html: String = fs::read_to_string("../frontend/404.html").unwrap_or_else(|err| {
                 eprintln!("Error finding 404 HTML, using default value. Error: {}", err);
