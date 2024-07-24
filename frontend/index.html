@@ -10,7 +10,7 @@
       |--LIST PLACEHOLDER--|
     </div>
     <input type="text" />
-    <button type="submit" id="create-btn">Create New To Do</button>
+    <button type="submit" id="create-btn">Create New Task</button>
     <script>
       const input = document.querySelector("input");
       const create_btn = document.getElementById("create-btn");
@@ -20,19 +20,19 @@
         const del_btns = document.querySelectorAll('.del-btn');
 
         for (let del_btn of del_btns) {
-          const id = Number(del_btn.getAttribute('data-todo-id'));
+          const id = Number(del_btn.getAttribute('data-task-id'));
           del_btn.addEventListener("click", () => {
-            delete_todo(id);
+            delete_task(id);
           });
         }
       }
       
-      const create_new_todo = async () => {
+      const create_new_task = async () => {
         const new_task = input.value;
 
-        console.log("Attempting to create new todo:", new_task);
+        console.log("Attempting to create new task:", new_task);
         if (new_task === '') {
-          alert("Please enter a todo.");
+          alert("Please enter a task.");
           return;
         }
 
@@ -51,7 +51,7 @@
           if (response.ok) {
             div.innerHTML = text;
             console.log("Replaced HTML");
-            console.log("Created new todo:", input.value);
+            console.log("Created new task:", input.value);
           } else {
             alert(`500 Internal Server Error: ${text}`);
           }
@@ -64,12 +64,12 @@
         input.value = "";
       }
 
-      create_btn.addEventListener("click", create_new_todo);
+      create_btn.addEventListener("click", create_new_task);
       input.addEventListener("keydown", evt => {
-        if (evt.code === "Enter") create_new_todo();
+        if (evt.code === "Enter") create_new_task();
       });
 
-      const delete_todo = async (id) => {
+      const delete_task = async (id) => {
         const fd = new FormData();
 
         fd.set("task-id", id);
