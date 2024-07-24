@@ -51,6 +51,7 @@
           if (response.ok) {
             div.innerHTML = text;
             console.log("Replaced HTML");
+            console.log("Created new todo:", input.value);
           } else {
             alert(`500 Internal Server Error: ${text}`);
           }
@@ -61,8 +62,6 @@
         hydrate_buttons();
 
         input.value = "";
-
-        console.log("Created new todo:", input.value)
       }
 
       create_btn.addEventListener("click", create_new_todo);
