@@ -45,10 +45,15 @@
             method: "POST",
             body: fd
           });
-          const text = await response.text();
-          div.innerHTML = text;
 
-          console.log("Replaced HTML");
+          const text = await response.text();
+
+          if (response.ok) {
+            div.innerHTML = text;
+            console.log("Replaced HTML");
+          } else {
+            alert(`500 Internal Server Error: ${text}`);
+          }
         } catch(e) {
           console.error(e);
         }
