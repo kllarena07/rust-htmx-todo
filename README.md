@@ -20,3 +20,5 @@ cargo run
 Once the server has started, a `Server listening on 127.0.0.1:3000` message should be printed to the terminal.
 
 3. Open `127.0.0.1:3000` in your browser
+
+_Disclaimer: All task data will be erased upon server shutdown or restart_
