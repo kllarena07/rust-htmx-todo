@@ -80,7 +80,12 @@
             body: fd
           });
           const text = await response.text();
-          div.innerHTML = text;
+
+          if (response.ok) {
+            div.innerHTML = text;
+          } else {
+            alert(`500 Internal Server Error: ${text}`);
+          }
 
           console.log("Replaced HTML");
         } catch(e) {
