@@ -8,7 +8,7 @@ But with a Rust backend and HTMX principles
 2. Start the server
 
 ```
-cd backend
+cd rusk-task-app/backend
 cargo run
 ```
 
