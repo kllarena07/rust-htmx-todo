@@ -62,6 +62,17 @@ fn handle_create(tasks: &mut Vec<String>, request: &Cow<str>) -> Result<String, 
     Ok(list_html)
 }
 
+fn handle_delete(tasks: &mut Vec<String>, request: &Cow<str>) -> Result<String, Error> {
+    let task_id_string = extract_field_data(&request, "task-id")?;
+    let task_id_usize = task_id_string.parse::<usize>().map_err(|e| Error::new(ErrorKind::InvalidData, e))?;
+    
+    tasks.remove(task_id_usize);
+
+    let list_html = build_list(tasks)?;
+
+    Ok(list_html)
+}
+
 fn handle_connection(mut stream: TcpStream, tasks: &mut Vec<String>) {
     let mut buffer: [u8; 1024] = [0; 1024];
 
@@ -95,12 +106,14 @@ fn handle_connection(mut stream: TcpStream, tasks: &mut Vec<String>) {
                 }
             }
         } else if buffer.starts_with(delete) {
-            let not_found_html: String = fs::read_to_string("../frontend/404.html").unwrap_or_else(|err| {
-                eprintln!("Error finding 404 HTML, using default value. Error: {}", err);
-                "404 Page Not Found".to_string()
-            });
-
-            ("HTTP/1.1 404 NOT FOUND", not_found_html)
+            match handle_delete(tasks, &request) {
+                Ok(list_html) => {
+                    ("HTTP/1.1 200 OK", list_html)
+                },
+                Err(_) => {
+                    ("HTTP/1.1 500 INTERNAL SERVER ERROR", String::from("Error creating task."))
+                }
+            }
         } else {
             let not_found_html: String = fs::read_to_string("../frontend/404.html").unwrap_or_else(|err| {
                 eprintln!("Error finding 404 HTML, using default value. Error: {}", err);
