@@ -5,6 +5,11 @@ But with a Rust backend and HTMX principles
 ## How to run this app:
 
 1. Clone this repository
+
+```
+git clone https://github.com/kllarena07/rust-task-app.git
+```
+
 2. Start the server
 
 ```
